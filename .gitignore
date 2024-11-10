@@ -1,5 +1,5 @@
 # Archivos de construcción de CMake
-build/
+bin/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
