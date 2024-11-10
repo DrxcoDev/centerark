@@ -1,29 +1,26 @@
 #include "engine.h"
 #include <iostream>
 
-Engine::Engine() : isRunning(false) {
-    // Constructor inicializa el motor
-}
+Engine::Engine() : isRunning(false) {}
 
-Engine::~Engine() {
-    // Destructor, limpiamos recursos si es necesario
-}
+Engine::~Engine() {}
 
 void Engine::init() {
-    // Inicializa los sistemas necesarios para el motor (gráficos, entradas, etc.)
-    renderer.init();
-    input.init();
+    if (!renderer.init()) {
+        std::cerr << "Failed to initialize renderer" << std::endl;
+        return;
+    }
+    isRunning = true;
 }
 
 void Engine::run() {
-    isRunning = true;
-    while (isRunning) {
-        input.pollEvents(); // Procesamos entradas
-        renderer.render();   // Renderizamos la escena
+    while (isRunning && !renderer.shouldClose()) {
+        renderer.render();
     }
 }
 
 void Engine::stop() {
     isRunning = false;
+    renderer.cleanup();
     std::cout << "Engine stopped" << std::endl;
 }

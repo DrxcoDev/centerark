@@ -1,3 +1,35 @@
-/target
-.vscode/
+# Archivos de construcción de CMake
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Archivos binarios y ejecutables
 bin/
+*.exe
+*.out
+*.o
+*.a
+*.so
+*.dylib
+
+# Archivos temporales y de logs
+*.log
+*.tmp
+*.temp
+*.bak
+
+# Archivos específicos de GLFW y OpenGL en sistemas Unix
+*.dSYM/
+*~ 
+
+# Archivos de entorno de desarrollo
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos de sistema (Mac y Windows)
+.DS_Store
+Thumbs.db
