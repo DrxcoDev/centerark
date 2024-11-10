@@ -4,7 +4,8 @@ use winit::window::Window;
 pub struct Renderer {
     device: wgpu::Device,
     queue: wgpu::Queue,
-    swap_chain: wgpu::SwapChain,
+    surface: wgpu::Surface,
+    config: wgpu::SurfaceConfiguration,
 }
 
 impl Renderer {
@@ -26,24 +27,24 @@ impl Renderer {
             None,
         ).await.unwrap();
 
-        let swap_chain_format = surface.get_preferred_format(&adapter).unwrap();
+        let surface_format = surface.get_supported_formats(&adapter)[0];
         let size = window.inner_size();
-        let swap_chain = device.create_swap_chain(
-            &surface,
-            &wgpu::SwapChainDescriptor {
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-                format: swap_chain_format,
-                width: size.width,
-                height: size.height,
-                present_mode: wgpu::PresentMode::Fifo,
-            },
-        );
+        let config = wgpu::SurfaceConfiguration {
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            format: surface_format,
+            width: size.width,
+            height: size.height,
+            present_mode: wgpu::PresentMode::Fifo,
+        };
 
-        Self { device, queue, swap_chain }
+        surface.configure(&device, &config);
+
+        Self { device, queue, surface, config }
     }
 
     pub fn render(&self) {
-        let frame = self.swap_chain.get_current_frame().unwrap().output;
+        let frame = self.surface.get_current_texture().unwrap();
+        let view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: Some("Render Encoder"),
         });
@@ -51,18 +52,19 @@ impl Renderer {
         {
             let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
-                color_attachments: &[wgpu::RenderPassColorAttachment {
-                    view: &frame.view,
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
                         store: true,
                     },
-                }],
+                })],
                 depth_stencil_attachment: None,
             });
         }
 
         self.queue.submit(std::iter::once(encoder.finish()));
+        frame.present();
     }
 }
